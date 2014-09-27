@@ -14,5 +14,5 @@ end
 
 function FlatArea.noise(area, offset, scale, spread, seed, octaves, persist)
 	spread = pos3d(spread, math.max(spread.x, spread.y))
-	return mapgen.noise2d(area.MinEdge, area.MaxEdge, offset, scale, spread, seed, octaves, persist)
+	return mapgen.noise2d(area.MinEdge, area.MaxEdge, offset, scale, pos3d(spread, 20), seed, octaves, persist)
 end

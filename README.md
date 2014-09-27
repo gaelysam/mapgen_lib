@@ -44,14 +44,12 @@ Arguments :
 
 * **offset** *(number)* : The noise offset
 * **scale** *(number)* : The scale of the noise
-* **spread** *(table)* : This table has the same format than a position. It define how slow/fast the value changes. If there is no field "z", generate a 2D noise
+* **spread** *(table)* : This table has the same format than a position. It define how slow/fast the value changes.
 * **seed** *(number)* : Each seed generate a different noise
 * **octaves** *(number)* : A high value result of more details but is slower
 * **persist** *(number)* : Depth of the details evoked previously
 
-Return :
-
-* **noise** *(table)* : An array of values starting at index 1
+Equivalent in 2D : FlatArea:noise
 
 ## VoxelAreas
 ### VoxelArea:altitude
