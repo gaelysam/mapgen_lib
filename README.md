@@ -49,6 +49,10 @@ Arguments :
 * **octaves** *(number)* : A high value result of more details but is slower
 * **persist** *(number)* : Depth of the details evoked previously
 
+Return :
+
+* **noise** *(table)* : An array of values starting at index 1
+
 Equivalent in 2D : FlatArea:noise
 
 ## VoxelAreas
@@ -274,7 +278,7 @@ Return :
 * **pos** *(position)* : The position at which the player appears
 
 ## Params formspec
-You can define mapgen.params_formspec, if any, it is shown after choosing the mapgen and before generating map. The sent fields are stored in mapgen.params.
+You can define mapgen.params_formspec, if any, it is shown after choosing the mapgen and before generating map. The sent fields are stored in metadata. To get the field which has been sent from a given widget, do `mapgen.get_map_meta("name_of_the_widget")`.
 
 ----------
 
