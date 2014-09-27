@@ -1,3 +1,5 @@
+-- FlatArea : same but in 2D
+
 FlatArea = {
 	MinEdge = {x=1, y=1},
 	MaxEdge = {x=0, y=0},
@@ -109,4 +111,35 @@ function pos3d(pos, alt)
 	else
 		return {x = pos.x, y = pos.y, z = pos.z}
 	end
+end
+
+-- Shortcut for "VoxelArea:new({MinEdge = minp, MaxEdge = maxp})"
+
+function minetest.voxel_area(minp, maxp)
+	return VoxelArea:new({MinEdge = minp, MaxEdge = maxp})
+end
+
+function minetest.flat_area(minp, maxp)
+	return FlatArea:new({MinEdge = minp, MaxEdge = maxp})
+end
+
+-- translate coordinates from an area (flat or voxel) to a second
+
+function mapgen.translate(area1, area2, i, alt)
+	local pos = pos3d(area1:position(i), alt or area2.MinEdge.y)
+	if not area2:containsp(pos) then
+		return
+	else
+		return area2:indexp(pos)
+	end
+end
+
+-- Including this function in classes
+VoxelArea.translate = mapgen.translate
+FlatArea.translate = mapgen.translate
+
+-- to get only the y coordinate ; faster
+function VoxelArea.altitude(area, i)
+	i = (i - 1) % area.zstride
+	return math.floor(i / area.ystride) + area.MinEdge.y
 end
