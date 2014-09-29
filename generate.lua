@@ -199,3 +199,10 @@ minetest.register_chatcommand("regen", {
 		return true, "Regenerated"
 	end,
 })
+
+function mapgen.get_voxel_manip(minp, maxp)
+	local manip = minetest.get_voxel_manip()
+	local emin, emax = manip:read_from_map(minp, maxp)
+	local area = minetest.voxel_area(emin, emax)
+	return manip, area
+end

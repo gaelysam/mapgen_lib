@@ -147,11 +147,24 @@ Returns the map meta with field as name.
 
 Arguments :
 
-* **field** *(string, number or boolean)* : The name of the metadata to increment
+* **field** *(string, number or boolean)* : The name of the metadata to get
 
 No return
 
 ## Others mapgen-related features
+### mapgen.get_voxel_manip
+Return a VoxelManip object and his VoxelArea.
+
+Arguments :
+
+* **minp** *(position)* : minimal corner of the area
+* **maxp** *(position)* : maximal corner of the area
+
+Return :
+
+* **vm** *(VoxelManip)* : The VoxelManip object, which has already read the chunk
+* **area** *(VoxelArea)* : A VoxelManip matching the VM.
+
 ### mapgen.get_ids
 Converts nodenames to content ids
 
