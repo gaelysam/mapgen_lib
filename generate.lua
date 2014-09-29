@@ -189,7 +189,7 @@ minetest.register_chatcommand("regen", {
 	params = "size",
 	description = "Regenerate a chunk",
 	func = function(name, param)
-		if minetest.check_player_privs(name, {server=true}) then
+		if name == mapgen.main_player then
 			local size = (tonumber(param) or 80) - 1
 			local minp = minetest.get_player_by_name(name):getpos()
 			minp.x, minp.y, minp.z = math.round(minp.x - size / 2), math.round(minp.y - size / 2), math.round(minp.z - size / 2)
