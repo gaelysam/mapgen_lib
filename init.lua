@@ -4,6 +4,7 @@ mapgen.start = false
 mapgen.seed = 0
 mapgen.time = 0
 mapgen.chunks = 0
+mapgen.vm = {}
 
 function load_modfile(...)
 	for _, file in ipairs({...}) do
@@ -78,3 +79,9 @@ function minetest.add_group(groupname, ...)
 		minetest.override_item(item, {groups = def.groups})
 	end
 end
+
+minetest.register_node("mapgen_lib:ignore", {
+	drawtype = "airlike",
+	walkable = true,
+	groups = {not_in_creative_invotory=1},
+})

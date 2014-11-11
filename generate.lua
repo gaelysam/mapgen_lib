@@ -27,6 +27,30 @@ end
 
 -- GENERATE A MAP
 
+local function fill_with_ignore(minp, maxp)
+	local ignore = minetest.get_content_id("mapgen_lib:ignore")
+	local data, area = mapgen.get_voxel_data(minp, maxp)
+	for x = minp.x, maxp.x do
+	for y = minp.y, maxp.y do
+	for z = minp.z, maxp.z do
+		data[area:index(x, y, z)] = ignore
+	end
+	end
+	end
+	mapgen.set_voxel_data(minp, maxp, data, false)
+end
+
+local function fill_with_air(minp, maxp, data, area)
+	local air = minetest.get_content_id("air")
+	for x = minp.x, maxp.x do
+	for y = minp.y, maxp.y do
+	for z = minp.z, maxp.z do
+		data[area:index(x, y, z)] = air
+	end
+	end
+	end
+end
+
 function mapgen.pregenerate(minp, maxp, seed)
 	if mapgen.start then -- Mapgen already started
 		mapgen.generate(minp, maxp, seed)
@@ -56,12 +80,7 @@ function mapgen.pregenerate(minp, maxp, seed)
 			end
 			mapgen.first = false
 		end
-		-- make a spawn platform if the mapgen isn't begun
-		for x = -2, 2 do
-			for z = -2, 2 do
-				minetest.set_node({x = x, y = -2, z = z}, {name = "default:dirt_with_grass"})
-			end
-		end
+		fill_with_ignore(minp, maxp)
 	end
 end
 
@@ -112,7 +131,7 @@ function mapgen.begin()
 	end
 end
 
-function mapgen.generate(minp, maxp, seed, delete)
+function mapgen.generate(minp, maxp, seed)
 	print("Preparing to map generation")
 	local time1 = os.clock()
 	-- mapgen stuff
@@ -123,26 +142,8 @@ function mapgen.generate(minp, maxp, seed, delete)
 	local data = manip:get_data()
 	local param = manip:get_light_data()
 	local param2 = manip:get_param2_data()
-	-- delete the spawn platform
-	if area:contains(0, -2, 0) then
-		for x = -2, 2 do
-			for z = -2, 2 do
-				local index = area:index(x, -2, z)
-				data[index] = air
-			end
-		end
-	end
-	-- delete the old map in case of chatcommand /regen
-	if delete then
-		print("Removing old map")
-		for x = minp.x, maxp.x do
-		for y = minp.y, maxp.y do
-		for z = minp.z, maxp.z do
-			data[area:index(x, y, z)] = air
-		end
-		end
-		end
-	end
+	-- convert ignore to air
+	fill_with_air(minp, maxp, data, area)
 	print("Map generation : from " .. minetest.pos_to_string(minp) .. " to " .. minetest.pos_to_string(maxp))
 	print("Data collecting")
 	local time2 = os.clock()
@@ -205,4 +206,99 @@ function mapgen.get_voxel_manip(minp, maxp)
 	local emin, emax = manip:read_from_map(minp, maxp)
 	local area = minetest.voxel_area(emin, emax)
 	return manip, area
+end
+
+function mapgen.check_voxelmanip(minp, maxp)
+	local vminp, vmaxp = mapgen.vm[1], mapgen.vm[2]
+	return vminp and vmaxp
+		and vminp.x == minp.x
+		and vminp.y == minp.y
+		and vminp.z == minp.z
+		and vmaxp.x == maxp.x
+		and vmaxp.y == maxp.y
+		and vmaxp.z == maxp.z
+end
+
+function mapgen.get_voxel_data(minp, maxp)
+	if mapgen.check_voxelmanip(minp, maxp) then
+		local vm = mapgen.vm[3]
+		return vm:get_data(), mapgen.vm[4]
+	else
+		local vm, area = mapgen.get_voxel_manip(minp, maxp)
+		mapgen.vm = {minp, maxp, vm, area}
+		return vm:get_data(), area
+	end
+end
+
+function mapgen.get_voxel_light_data(minp, maxp)
+	if mapgen.check_voxelmanip(minp, maxp) then
+		local vm = mapgen.vm[3]
+		return vm:get_light_data(), mapgen.vm[4]
+	else
+		local vm, area = mapgen.get_voxel_manip(minp, maxp)
+		mapgen.vm = {minp, maxp, vm, area}
+		return vm:get_light_data(), area
+	end
+end
+
+function mapgen.get_voxel_param2_data(minp, maxp)
+	if mapgen.check_voxelmanip(minp, maxp) then
+		local vm = mapgen.vm[3]
+		return vm:get_param2_data(), mapgen.vm[4]
+	else
+		local vm, area = mapgen.get_voxel_manip(minp, maxp)
+		mapgen.vm = {minp, maxp, vm, area}
+		return vm:get_param2_data(), area
+	end
+end
+
+function mapgen.set_voxel_data(minp, maxp, data, calc_light)
+	if mapgen.check_voxelmanip(minp, maxp) then
+		local vm = mapgen.vm[3]
+		vm:set_data(data)
+		if calc_light then
+			vm:calc_lighting()
+		end
+		vm:write_to_map()
+		vm:update_map()
+	else
+		local vm, area = mapgen.voxel_area()
+		mapgen.vm = {minp, maxp, vm, area}
+		vm:set_data(data)
+		if calc_light then
+			vm:calc_lighting()
+		end
+		vm:write_to_map()
+		vm:update_map()
+	end
+end
+
+function mapgen.set_voxel_light_data(minp, maxp, data)
+	if mapgen.check_voxelmanip(minp, maxp) then
+		local vm = mapgen.vm[3]
+		vm:set_light_data(data)
+		vm:write_to_map()
+		vm:update_map()
+	else
+		local vm, area = mapgen.voxel_area()
+		mapgen.vm = {minp, maxp, vm, area}
+		vm:set_light_data(data)
+		vm:write_to_map()
+		vm:update_map()
+	end
+end
+
+function mapgen.set_voxel_param2_data(minp, maxp, data)
+	if mapgen.check_voxelmanip(minp, maxp) then
+		local vm = mapgen.vm[3]
+		vm:set_param2_data(data)
+		vm:write_to_map()
+		vm:update_map()
+	else
+		local vm, area = mapgen.voxel_area()
+		mapgen.vm = {minp, maxp, vm, area}
+		vm:set_param2_data(data)
+		vm:write_to_map()
+		vm:update_map()
+	end
 end
